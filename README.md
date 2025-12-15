@@ -32,7 +32,9 @@ Open the project folder:
 cd iron-fist-challenge
 
 Open index.html in your browser
+
 or use a local server for better behavior.
+
 
 🎯 Purpose of This Project
 
@@ -54,6 +56,3 @@ Zeeshan Khattak
 📜 License
 This project is open-source and free to use for learning and personal projects.
 
-📜 License
-
-This project is open-source and free to use for learning and personal projects.
