@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRON FIST: CHAMPIONSHIP</title>
+    <link href="https://fonts.googleapis.com/css2?family=Teko:wght@300;500;700&family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    
+    <style>
+        /* --- CORE VARIABLES --- */
+        :root {
+            --bg-color: #050505;
+            --card-bg: #111111;
+            --brand-red: #FF2E2E;
+            --text-white: #ffffff;
+            --text-dim: #666666;
+            --font-display: 'Teko', sans-serif;
+            --font-body: 'Inter', sans-serif;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-white);
+            font-family: var(--font-body);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(circle at center, transparent 0%, #000 100%);
+        }
+
+        /* --- BACKGROUND ANIMATION (The Grid) --- */
+        .grid-bg {
+            position: absolute; width: 200%; height: 200%; top: -50%; left: -50%;
+            background-image: linear-gradient(transparent 90%, rgba(255, 46, 46, 0.1) 90%),
+                linear-gradient(90deg, transparent 90%, rgba(255, 46, 46, 0.1) 90%);
+            background-size: 50px 50px; transform: perspective(500px) rotateX(60deg);
+            animation: moveGrid 5s linear infinite; z-index: -1; pointer-events: none;
+        }
+        @keyframes moveGrid {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(50px); }
+        }
+
+        /* --- CONTAINER --- */
+        .container {
+            width: 100%; max-width: 500px; height: 100%; position: relative;
+            display: flex; flex-direction: column; z-index: 10;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 { font-family: var(--font-display); font-size: 6rem; line-height: 0.85; text-transform: uppercase; margin-bottom: 5px; position: relative;}
+        h2 { font-family: var(--font-display); font-size: 3rem; text-transform: uppercase; margin-bottom: 5px; color: var(--brand-red); }
+        
+        .glitch { position: relative; color: white; }
+        .glitch::before, .glitch::after {
+            content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0.8;
+        }
+        .glitch::before { color: #0ff; z-index: -1; animation: glitch-anim-1 2s infinite linear alternate-reverse; }
+        .glitch::after { color: #f0f; z-index: -2; animation: glitch-anim-2 3s infinite linear alternate-reverse; }
+        
+        @keyframes glitch-anim-1 { 0% { clip-path: inset(20% 0 80% 0); transform: translate(-2px, 0); } 20% { clip-path: inset(60% 0 10% 0); transform: translate(2px, 0); } 100% { clip-path: inset(10% 0 50% 0); transform: translate(-2px, 0); } }
+        @keyframes glitch-anim-2 { 0% { clip-path: inset(10% 0 60% 0); transform: translate(2px, 0); } 100% { clip-path: inset(80% 0 5% 0); transform: translate(-2px, 0); } }
+
+        /* --- BUTTONS --- */
+        .btn {
+            background: var(--brand-red); color: white; border: none; padding: 20px;
+            font-family: var(--font-display); font-size: 1.8rem; letter-spacing: 2px;
+            text-transform: uppercase; cursor: pointer; width: 100%;
+            clip-path: polygon(20px 0, 100% 0, 100% calc(100% - 20px), calc(100% - 20px) 100%, 0 100%, 0 20px);
+            transition: var(--transition); margin-top: 15px; box-shadow: 0 0 15px rgba(255, 46, 46, 0.3);
+        }
+        .btn:hover { background: white; color: var(--brand-red); transform: translateY(-2px); box-shadow: 0 0 30px rgba(255, 46, 46, 0.8); }
+        .btn-secondary { background: transparent; border: 1px solid #333; color: #888; box-shadow: none; }
+        .btn-secondary:hover { background: #333; color: #fff; border-color: #fff; }
+
+        input {
+            background: rgba(20,20,20,0.9); border: 1px solid #333; color: white;
+            padding: 20px; width: 100%; font-family: var(--font-body); font-size: 1.2rem;
+            margin-bottom: 20px; outline: none; border-radius: 4px;
+            text-align: center; text-transform: uppercase; font-weight: bold; backdrop-filter: blur(5px);
+        }
+        input:focus { border-color: var(--brand-red); box-shadow: 0 0 15px rgba(255,46,46,0.2); }
+
+        /* --- VIEWS --- */
+        .page {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            padding: 30px; display: flex; flex-direction: column; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease, transform 0.4s ease; transform: scale(0.95);
+        }
+        .page.active { opacity: 1; pointer-events: all; transform: scale(1); }
+
+        /* --- LANDING SPECIFIC --- */
+        .hero-visual {
+            width: 200px; height: 200px; background: radial-gradient(circle, var(--brand-red) 0%, transparent 70%);
+            position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%);
+            opacity: 0.15; filter: blur(40px); z-index: -1; animation: pulse 4s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% {opacity: 0.15; transform: translate(-50%, -50%) scale(1);} 50% {opacity: 0.3; transform: translate(-50%, -50%) scale(1.2);} }
+
+        .status-bar {
+            margin-top: 40px; display: flex; gap: 20px; justify-content: center;
+            font-size: 0.75rem; color: #555; text-transform: uppercase; letter-spacing: 1px;
+        }
+        .status-dot { display: inline-block; width: 8px; height: 8px; background: #0f0; border-radius: 50%; margin-right: 5px; box-shadow: 0 0 5px #0f0; }
+
+        /* --- NEWS TICKER --- */
+        .ticker-wrap {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: var(--brand-red); color: white;
+            font-family: var(--font-display); font-size: 1.2rem; height: 40px; line-height: 40px;
+            overflow: hidden; white-space: nowrap; border-top: 2px solid white;
+        }
+        .ticker { display: inline-block; animation: ticker 20s linear infinite; padding-left: 100%; }
+        @keyframes ticker { 0% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(-100%, 0, 0); } }
+
+        /* --- BRACKET & GAME --- */
+        .bracket-header { text-align: center; margin-bottom: 30px; background: rgba(0,0,0,0.8); padding: 15px; border: 1px solid #333; }
+        .match-card {
+            background: rgba(17,17,17,0.9); padding: 15px; margin-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center;
+            border-left: 3px solid #333; transition: var(--transition);
+        }
+        .match-card.user-match { border-left-color: var(--brand-red); background: rgba(40,10,10,0.9); }
+        .player-name.winner { color: var(--brand-red); text-shadow: 0 0 10px rgba(255,46,46,0.5); }
+        
+        .game-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #222; padding-bottom: 15px;}
+        .score-box { font-family: var(--font-display); font-size: 4rem; line-height: 0.8; }
+        .score-label { font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; }
+        
+        .arena { flex-grow: 1; display: flex; justify-content: center; align-items: center; gap: 30px; }
+        .hand { font-size: 6rem; transition: var(--transition); filter: grayscale(1); }
+        .hand.active { filter: grayscale(0) drop-shadow(0 0 20px rgba(255,255,255,0.2)); transform: scale(1.2); }
+        
+        .move-btn {
+            background: rgba(20,20,20,0.8); border: 1px solid #333; height: 90px;
+            font-size: 2.5rem; cursor: pointer; border-radius: 8px; transition: var(--transition);
+        }
+        .move-btn:hover { border-color: var(--brand-red); background: rgba(50,0,0,0.8); box-shadow: 0 0 15px var(--brand-red); }
+
+        @keyframes shakeLeft { 0%,100% {transform:translateX(0) rotate(-90deg);} 50% {transform:translateX(-20px) rotate(-90deg);} }
+        @keyframes shakeRight { 0%,100% {transform:translateX(0) rotate(90deg) scaleX(-1);} 50% {transform:translateX(20px) rotate(90deg) scaleX(-1);} }
+        .p1-shake { animation: shakeLeft 0.8s infinite; }
+        .p2-shake { animation: shakeRight 0.8s infinite; }
+        #p1-hand { transform: rotate(-90deg); }
+        #p2-hand { transform: scaleX(-1) rotate(90deg); }
+
+        .red-text { color: var(--brand-red); }
+        .dim-text { color: var(--text-dim); }
+        .controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <div class="container">
+        
+        <section id="p-landing" class="page active" style="text-align: center; justify-content: center;">
+            <div class="hero-visual"></div>
+            <div style="margin-bottom: 50px; z-index: 2;">
+                <p style="letter-spacing: 5px; color: #888; font-size: 0.8rem; margin-bottom: 10px;">SEASON 4 // ONLINE</p>
+                <h1 class="glitch" data-text="IRON FIST">IRON FIST</h1>
+                <h2 style="font-size: 2rem; color: white; letter-spacing: 2px; margin-bottom: 10px;">TOURNAMENT</h2>
+                
+                <p style="font-size: 0.8rem; color: #444; text-transform: uppercase; letter-spacing: 2px;">Made by Zeeshan Khattak</p>
+            </div>
+            
+            <div style="width: 100%; padding: 0 20px;">
+                <button class="btn" onclick="initAudioAndStart()">ENTER ARENA</button>
+            </div>
+            <div class="status-bar">
+                <div><span class="status-dot"></span>Server Online</div>
+                <div>Players: 8,421</div>
+                <div>Ping: 24ms</div>
+            </div>
+        </section>
+
+        <section id="p-join" class="page" style="text-align: center;">
+            <h2 class="red-text">IDENTITY</h2>
+            <p class="dim-text" style="margin-bottom: 30px;">Initialize your fighter profile</p>
+            <input type="text" id="username" placeholder="ENTER ALIAS" maxlength="12">
+            <button class="btn" onclick="initTournament()">CONFIRM ENTRY</button>
+            <button class="btn btn-secondary" onclick="navTo('p-landing')">CANCEL</button>
+        </section>
+
+        <section id="p-bracket" class="page">
+            <div class="bracket-header">
+                <div style="font-size: 0.9rem; letter-spacing: 2px; color:#888" id="bracket-stage-name">QUARTER FINALS</div>
+                <h2 style="font-size: 2.5rem; margin:0; color: white;">LIVE BRACKET</h2>
+            </div>
+            <div id="bracket-list" style="flex-grow: 1;"></div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button class="btn" onclick="startMatch()">START MATCH</button>
+            </div>
+        </section>
+
+        <section id="p-game" class="page">
+            <div class="game-header">
+                <div>
+                    <span class="score-label" id="p1-name-disp">YOU</span>
+                    <div class="score-box" id="score-p1">0</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 2rem; font-weight: bold; color:#333">VS</div>
+                </div>
+                <div style="text-align: right;">
+                    <span class="score-label" id="p2-name-disp">OPPONENT</span>
+                    <div class="score-box" id="score-p2">0</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-bottom: 20px; color: var(--brand-red); font-weight: bold; font-style: italic;" id="commentary">
+                READY?
+            </div>
+
+            <div class="arena">
+                <div id="p1-hand" class="hand">✊</div>
+                <div id="p2-hand" class="hand">✊</div>
+            </div>
+
+            <div class="controls" id="controls">
+                <button class="move-btn" onclick="playTurn('rock')">✊</button>
+                <button class="move-btn" onclick="playTurn('paper')">✋</button>
+                <button class="move-btn" onclick="playTurn('scissors')">✌️</button>
+            </div>
+        </section>
+
+        <section id="p-result" class="page" style="text-align: center;">
+            <h1 id="res-title" style="font-size: 5rem;">VICTORY</h1>
+            <p id="res-sub" class="dim-text" style="margin-bottom: 30px;">Advancing to next bracket...</p>
+            <div id="res-score" style="font-size: 3rem; font-family: var(--font-display); margin-bottom: 30px; color: var(--brand-red);">2 - 1</div>
+            <button class="btn" onclick="nextRound()">CONTINUE</button>
+        </section>
+
+        <section id="p-champion" class="page" style="text-align: center; background: radial-gradient(circle, #220000 0%, #000000 100%);">
+            <h1 style="color:white; font-size: 2rem; margin-bottom: 0;">SEASON CHAMPION</h1>
+            <h1 class="red-text" style="font-size: 7rem; text-shadow: 0 0 50px var(--brand-red);">WINNER</h1>
+            <div style="font-size: 6rem; margin: 30px 0;">🏆</div>
+            <button class="btn" onclick="navTo('p-landing')">MAIN MENU</button>
+        </section>
+
+    </div>
+
+    <div class="ticker-wrap">
+        <div class="ticker">
+            BREAKING: "VIPER" ELIMINATED BY "GHOST" IN SHOCKING UPSET  ///  PRIZE POOL UPDATED: $50,000  ///  NEXT TOURNAMENT STARTS IN 10 MIN  ///  TOP RANK: "CYBER_X" WINS 15 IN A ROW  ///  JOIN THE DISCORD FOR SCRIMS  ///
+        </div>
+    </div>
+
+    <script>
+        /* --- 1. SYNTH AUDIO ENGINE (NO EXTERNAL FILES) --- */
+        let audioCtx;
+        
+        function initAudioAndStart() {
+            // Create Audio Context on First User Click to bypass browser blocks
+            if (!audioCtx) {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            // Play a startup "Blip"
+            playTone(600, 'square', 0.1);
+            navTo('p-join');
+        }
+
+        // Generic Tone Generator
+        function playTone(freq, type, duration, vol = 0.1) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        const soundEffects = {
+            click: () => playTone(800, 'sine', 0.05, 0.1),
+            shake: () => playTone(100, 'sawtooth', 0.1, 0.05),
+            winRound: () => {
+                // High Arpeggio
+                playTone(523.25, 'triangle', 0.1, 0.1); // C5
+                setTimeout(() => playTone(659.25, 'triangle', 0.1, 0.1), 100); // E5
+                setTimeout(() => playTone(783.99, 'triangle', 0.3, 0.1), 200); // G5
+            },
+            loseRound: () => {
+                // Low descending
+                playTone(200, 'sawtooth', 0.2, 0.1);
+                setTimeout(() => playTone(150, 'sawtooth', 0.4, 0.1), 150);
+            },
+            draw: () => {
+                playTone(300, 'square', 0.1, 0.05);
+                setTimeout(() => playTone(300, 'square', 0.1, 0.05), 100);
+            },
+            victory: () => {
+                // Fanfare
+                [523, 659, 783, 1046, 783, 1046].forEach((f, i) => {
+                    setTimeout(() => playTone(f, 'square', 0.2, 0.1), i * 150);
+                });
+            }
+        };
+
+        /* --- 2. GAME LOGIC --- */
+        const botNames = ["Viper", "Kratos", "Shadow", "Glitch", "Raven", "Cyber_X", "Neon", "Tank", "Ghost", "Zero"];
+        const comments = {
+            win: ["CRITICAL HIT!", "PERFECT READ!", "DOMINATING!", "TOO FAST!", "GODLIKE!"],
+            lose: ["OUCH!", "COUNTERED!", "DENIED!", "DISASTER!", "READ LIKE A BOOK"],
+            draw: ["CLASH!", "STALEMATE", "EVEN MATCH", "BLOCKED", "PARRY!"]
+        };
+
+        let state = {
+            user: "Player",
+            stage: 0,
+            matches: [],
+            game: { p1Score: 0, p2Score: 0, p2Name: "", timer: null }
+        };
+
+        function navTo(id) {
+            if(audioCtx) soundEffects.click(); 
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function initTournament() {
+            const input = document.getElementById('username').value;
+            state.user = input || "Unknown";
+            state.stage = 0;
+            
+            let bots = [...botNames].sort(() => 0.5 - Math.random()).slice(0, 7);
+            state.matches = [
+                { p1: state.user, p2: bots[0], winner: null, userMatch: true },
+                { p1: bots[1], p2: bots[2], winner: null, userMatch: false },
+                { p1: bots[3], p2: bots[4], winner: null, userMatch: false },
+                { p1: bots[5], p2: bots[6], winner: null, userMatch: false }
+            ];
+            renderBracket();
+            navTo('p-bracket');
+        }
+
+        function renderBracket() {
+            const list = document.getElementById('bracket-list');
+            const title = document.getElementById('bracket-stage-name');
+            list.innerHTML = '';
+            
+            if(state.stage === 0) title.innerText = "QUARTER FINALS";
+            else if(state.stage === 1) title.innerText = "SEMI FINALS";
+            else title.innerText = "GRAND FINALS";
+
+            state.matches.forEach((m) => {
+                const isUser = m.p1 === state.user || m.p2 === state.user;
+                list.innerHTML += `
+                    <div class="match-card ${isUser ? 'user-match' : ''}">
+                        <span class="player-name ${m.winner === m.p1 ? 'winner' : ''}">${m.p1}</span>
+                        <span style="font-size:0.8rem; color:#555">VS</span>
+                        <span class="player-name ${m.winner === m.p2 ? 'winner' : ''}">${m.p2}</span>
+                    </div>`;
+            });
+        }
+
+        function simulateOtherMatches() {
+            state.matches.forEach(m => {
+                if (!m.userMatch) m.winner = Math.random() > 0.5 ? m.p1 : m.p2;
+            });
+        }
+
+        function nextRound() {
+            if (state.matches[0].winner !== state.user) return navTo('p-landing');
+            if (state.stage === 2) return navTo('p-champion');
+
+            state.stage++;
+            let old = state.matches;
+            let next = [];
+
+            if (state.stage === 1) { 
+                next.push({ p1: old[0].winner, p2: old[1].winner, winner: null, userMatch: true });
+                next.push({ p1: old[2].winner, p2: old[3].winner, winner: null, userMatch: false });
+            } 
+            else if (state.stage === 2) {
+                next.push({ p1: old[0].winner, p2: old[1].winner, winner: null, userMatch: true });
+            }
+
+            state.matches = next;
+            renderBracket();
+            navTo('p-bracket');
+        }
+
+        function startMatch() {
+            const match = state.matches[0];
+            state.game.p1Score = 0;
+            state.game.p2Score = 0;
+            state.game.p2Name = (match.p1 === state.user) ? match.p2 : match.p1;
+            
+            document.getElementById('p1-name-disp').innerText = state.user;
+            document.getElementById('p2-name-disp').innerText = state.game.p2Name;
+            document.getElementById('score-p1').innerText = "0";
+            document.getElementById('score-p2').innerText = "0";
+            document.getElementById('commentary').innerText = "ROUND 1 - FIGHT!";
+            
+            simulateOtherMatches();
+            navTo('p-game');
+            resetHands();
+        }
+
+        function playTurn(move) {
+            const controls = document.getElementById('controls');
+            controls.style.pointerEvents = 'none';
+            controls.style.opacity = '0.5';
+            
+            soundEffects.shake(); // Synth shake sound
+
+            const h1 = document.getElementById('p1-hand');
+            const h2 = document.getElementById('p2-hand');
+            h1.classList.add('p1-shake'); h2.classList.add('p2-shake');
+            h1.innerText = "✊"; h2.innerText = "✊";
+
+            setTimeout(() => {
+                h1.classList.remove('p1-shake'); h2.classList.remove('p2-shake');
+                
+                const botsMove = ['rock', 'paper', 'scissors'][Math.floor(Math.random()*3)];
+                const icons = { rock: '✊', paper: '✋', scissors: '✌️' };
+                
+                h1.innerText = icons[move]; h2.innerText = icons[botsMove];
+                h1.classList.add('active'); h2.classList.add('active');
+
+                resolveRound(move, botsMove);
+                
+                setTimeout(() => {
+                    controls.style.pointerEvents = 'all';
+                    controls.style.opacity = '1';
+                    resetHands();
+                }, 1500);
+            }, 800);
+        }
+
+        function resetHands() {
+            const h1 = document.getElementById('p1-hand');
+            const h2 = document.getElementById('p2-hand');
+            h1.classList.remove('active'); h2.classList.remove('active');
+            h1.innerText = "✊"; h2.innerText = "✊";
+        }
+
+        function resolveRound(p1, p2) {
+            const comm = document.getElementById('commentary');
+            
+            if (p1 === p2) {
+                soundEffects.draw();
+                comm.innerText = comments.draw[Math.floor(Math.random()*comments.draw.length)];
+                comm.style.color = "#fff";
+                return;
+            }
+
+            if ((p1 === 'rock' && p2 === 'scissors') || (p1 === 'paper' && p2 === 'rock') || (p1 === 'scissors' && p2 === 'paper')) {
+                state.game.p1Score++;
+                soundEffects.winRound();
+                comm.innerText = comments.win[Math.floor(Math.random()*comments.win.length)];
+                comm.style.color = "var(--brand-red)";
+            } else {
+                state.game.p2Score++;
+                soundEffects.loseRound();
+                comm.innerText = comments.lose[Math.floor(Math.random()*comments.lose.length)];
+                comm.style.color = "#888";
+            }
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            document.getElementById('score-p1').innerText = state.game.p1Score;
+            document.getElementById('score-p2').innerText = state.game.p2Score;
+            if (state.game.p1Score === 2 || state.game.p2Score === 2) {
+                setTimeout(() => endMatch(state.game.p1Score === 2), 1000);
+            }
+        }
+
+        function endMatch(playerWon) {
+            state.matches[0].winner = playerWon ? state.user : state.game.p2Name;
+            const title = document.getElementById('res-title');
+            const sub = document.getElementById('res-sub');
+            const score = document.getElementById('res-score');
+            
+            score.innerText = `${state.game.p1Score} - ${state.game.p2Score}`;
+
+            if(playerWon) {
+                soundEffects.victory();
+                title.innerText = "VICTORY";
+                title.className = "";
+                sub.innerText = `You eliminated ${state.game.p2Name}`;
+                document.querySelector('#p-result button').innerText = "CONTINUE TO BRACKET";
+                document.querySelector('#p-result button').onclick = nextRound;
+            } else {
+                soundEffects.loseRound();
+                title.innerText = "DEFEAT";
+                title.className = "dim-text";
+                sub.innerText = `Eliminated by ${state.game.p2Name}`;
+                document.querySelector('#p-result button').innerText = "RETURN TO LOBBY";
+                document.querySelector('#p-result button').onclick = () => navTo('p-landing');
+            }
+            navTo('p-result');
+        }
+    </script>
+</body>
+</html>
