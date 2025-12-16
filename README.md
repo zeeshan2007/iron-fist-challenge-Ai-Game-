@@ -23,17 +23,6 @@ Clean and responsive UI
 Simple interactive buttons and transitions
 
 
-💻 How to Run Locally
-
-Clone the repository:
-git clone https://github.com/YOUR_USERNAME/iron-fist-challenge.git
-
-Open the project folder:
-cd iron-fist-challenge
-
-Open index.html in your browser
-
-or use a local server for better behavior.
 
 
 🎯 Purpose of This Project
